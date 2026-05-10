@@ -2,201 +2,130 @@
 
 Quantitative research engine for the Nairobi Securities Exchange.
 
+Finding the subtle order in NSE's apparent chaos.
+
 ---
 
-## What This Is
+## Current Status
 
-A systematic quantitative research infrastructure for NSE equities.
-Built from scratch on 18 years of NSE data (2007-2025).
+**Phase 3 — Active Research**
 
-**Research agenda:**
-- Market efficiency — is NSE predictable?
-- Factor premia — momentum, mean reversion, value, size, liquidity
-- Regime analysis — how do strategies perform across bull/bear markets?
-- Risk model — covariance structure, systematic factors
-- Sector dynamics — how do NSE sectors relate to macro variables?
+Core finding confirmed across 18 years of data. Mean reversion is
+persistent, statistically significant, and regime-independent.
 
-**Current finding (2007 data):**
-NSE shows statistically significant cross-sectional mean reversion.
-Recent losers outperform recent winners by ~110% annualized long-short
-spread. Effect consistent across 5d, 10d, 20d lookback windows.
-T-statistics: 3.8–4.6. Needs replication across full dataset.
+---
+
+## Key Findings
+
+### RN002 — Cross-Sectional Mean Reversion (2007-2025)
+- 54/59 tradeable stocks show negative lag-1 autocorrelation
+- Mean lag-1 AC: -0.081 across tradeable universe
+- 72/83 stocks statistically predictable (Ljung-Box p < 0.05)
+- 20d contrarian strategy: +83% gross annual return
+- Net return at 3% round trip (worst case): +47% annually
+- T-statistics: Q1 +5.51, Q5 -5.06
+- Holds across all regimes: bull +89%, bear +84%, flat +75%
+- Strongest tradeable effect: Banking sector (Q1 +66%, Q5 -78%)
+- Monthly rebalancing viable at any realistic NSE transaction cost
+
+### RN001 — Preliminary 2007 Finding (superseded by RN002)
+Single year result. Confirmed and extended by RN002.
 
 ---
 
 ## Dataset
 
 Source: Mendeley NSE dataset
-- Annual all-stocks files: 2007–2025 (19 files, ~190,000 rows)
-- Individual stock historical files: 98 files across 14 sector directories
-- Sector aggregate files: 2013, 2020–2025
-- Index data: NSE 20, NASI, FTSE Kenya 15, FTSE Kenya 25
+
+- Annual all-stocks files: 2007-2025 (19 files)
+- Individual stock files: 98 files across 14 sector directories
+- Index data: NSE 20, NSE 25, NASI, Bonds Index
+
+Database (PostgreSQL):
+- 289,498 price rows
+- 249,488 return rows
+- 97 securities
+- 19 years: 2007-01-02 to 2025-10-31
+
+---
+
+## Research Agenda
+
+- [x] Market efficiency tests — autocorrelation, Ljung-Box
+- [x] Mean reversion factor — confirmed, regime-tested, sector-tested
+- [ ] Efficiency evolution — is NSE becoming more efficient over time?
+- [ ] Value factors — price-to-book, dividend yield
+- [ ] Size factor — small cap premium
+- [ ] Liquidity factor — illiquidity premium
+- [ ] Factor independence — correlation between factors
+- [ ] Risk model — covariance structure
+- [ ] Backtester — realistic simulation with NSE costs
+- [ ] Position sizing — Kelly criterion
+- [ ] Paper trading — 3 month live validation
 
 ---
 
 ## Setup
 
-### 1. Environment
-
 ```bash
-# Clone and navigate
-cd nairobi_alpha
-
-# Create virtual environment (optional but recommended)
-python -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
+# Environment
 pip install -r requirements.txt
-
-# Copy environment config
 cp .env.example .env
-# Edit .env with your database password
-```
+# Set DB_PASSWORD and DB_PORT=5433 in .env
 
-### 2. Database
-
-```bash
-# Start PostgreSQL via Docker
+# Database
 docker-compose up -d
 
-# Verify it is running
-docker ps
+# Load all data
+python3 -c "
+import sys; sys.path.insert(0, '.')
+from src.data.cleaning.nse_cleaner import load_and_clean, compute_returns
+from src.data.storage.database import get_engine, upsert_securities, insert_prices, insert_returns, insert_indices
+from pathlib import Path
+engine = get_engine()
+for f in sorted(Path('data/raw').glob('NSE_data_all_stocks_*.csv')):
+    prices, indices, quality = load_and_clean(f)
+    equities = prices[prices['security_type']=='equity']
+    returns = compute_returns(equities)
+    ids = upsert_securities(prices, engine)
+    insert_prices(prices, ids, engine)
+    insert_returns(returns, ids, engine)
+    insert_indices(indices, engine)
+    print(f'{f.name}: done')
+"
 
-# Schema is auto-applied on first start
-# (sql/init/001_schema.sql is mounted as init script)
-```
-
-### 3. Load All Data
-
-```bash
-# Point to your Mendeley dataset directory
-python setup_and_run.py --data-dir /path/to/mendeley/data
-
-# Skip database if you want research only
-python setup_and_run.py --data-dir /path/to/mendeley/data --skip-db
-```
-
-### 4. Research Notebooks
-
-```bash
-# Start Jupyter
+# Research
 jupyter lab notebooks/
 ```
 
 ---
 
 ## Project Structure
-
-```
 nairobi-alpha/
-│
-├── docker/
-│   ├── jupyter/
-│   │   └── Dockerfile
-│   └── postgres/
-│       └── Dockerfile
-│
-├── sql/
-│   ├── init/
-│   │   └── 001_schema.sql
-│   └── queries/
-│       └── (saved research queries)
-│
 ├── src/
 │   ├── data/
-│   │   ├── __init__.py
-│   │   ├── acquisition/
-│   │   │   ├── __init__.py
-│   │   │   ├── nse_scraper.py
-│   │   │   └── corporate_actions.py
-│   │   ├── cleaning/
-│   │   │   ├── __init__.py
-│   │   │   ├── price_cleaner.py
-│   │   │   └── adjustment.py
-│   │   └── storage/
-│   │       ├── __init__.py
-│   │       └── database.py
-│   │
-│   ├── research/
-│   │   ├── __init__.py
-│   │   ├── returns/
-│   │   │   ├── __init__.py
-│   │   │   └── calculator.py
-│   │   ├── factors/
-│   │   │   ├── __init__.py
-│   │   │   ├── momentum.py
-│   │   │   ├── value.py
-│   │   │   ├── size.py
-│   │   │   ├── quality.py
-│   │   │   └── liquidity.py
-│   │   ├── statistics/
-│   │   │   ├── __init__.py
-│   │   │   ├── efficiency_tests.py
-│   │   │   └── factor_tests.py
-│   │   └── risk/
-│   │       ├── __init__.py
-│   │       └── covariance.py
-│   │
-│   ├── strategy/
-│   │   ├── __init__.py
-│   │   ├── backtester.py
-│   │   ├── portfolio.py
-│   │   └── performance.py
-│   │
-│   └── utils/
-│       ├── __init__.py
-│       ├── config.py
-│       └── logging.py
-│
+│   │   ├── acquisition/ingest.py
+│   │   ├── cleaning/nse_cleaner.py
+│   │   └── storage/database.py
+│   └── research/
+│       ├── engine.py
+│       └── factors/momentum.py
 ├── notebooks/
 │   ├── 01_data_exploration/
+│   │   └── 01_research_session_01.ipynb
 │   ├── 02_efficiency_research/
 │   ├── 03_factor_research/
 │   ├── 04_strategy_development/
 │   └── 05_risk_research/
-│
 ├── research/
 │   └── papers/
-│       └── (your written research outputs)
-│
-├── tests/
-│   └── (unit tests for core components)
-│
-├── .env
-├── .gitignore
+│       ├── RN001_mean_reversion_nse_2007.md
+│       └── RN002_mean_reversion_nse_2007_2025.md
+├── sql/init/001_schema.sql
 ├── docker-compose.yml
 ├── requirements.txt
-└── README.md
-└── setup_and_run.py         # Master setup script
-```
+└── setup_and_run.py
 
 ---
 
-## Running The Full Research Agenda
-
-Once all data is loaded:
-
-```python
-from src.data.acquisition.ingest import ingest_all_annual_files
-from src.research.engine import run_full_research
-
-# Load all years
-prices, indices, returns = ingest_all_annual_files(Path('data/raw'))
-
-# Run everything
-results = run_full_research(prices, returns, indices)
-```
-
----
-
-## Key Findings So Far
-
-### RN001 — Cross-Sectional Mean Reversion (2007)
-NSE 2007 shows strong mean reversion across 5d/10d/20d windows.
-Q1 (recent losers): +62% ann. Q5 (recent winners): -50% ann.
-L/S spread: -112% ann. T-stat: -3.8 to -4.6.
-Status: Preliminary. Requires full dataset replication.
-
----
-
+*Nairobi Alpha — Finding the subtle order in NSE's chaos.*
