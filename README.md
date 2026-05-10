@@ -53,7 +53,7 @@ Database (PostgreSQL):
 
 - [x] Market efficiency tests — autocorrelation, Ljung-Box
 - [x] Mean reversion factor — confirmed, regime-tested, sector-tested
-- [ ] Efficiency evolution — is NSE becoming more efficient over time?
+- [x] Efficiency evolution — stable, p=0.76, edge is durable
 - [ ] Value factors — price-to-book, dividend yield
 - [ ] Size factor — small cap premium
 - [ ] Liquidity factor — illiquidity premium
