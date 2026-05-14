@@ -96,35 +96,6 @@ for f in sorted(Path('data/raw').glob('NSE_data_all_stocks_*.csv')):
 
 # Research
 jupyter lab notebooks/
-```
-
----
-
-## Project Structure
-nairobi-alpha/
-├── src/
-│   ├── data/
-│   │   ├── acquisition/ingest.py
-│   │   ├── cleaning/nse_cleaner.py
-│   │   └── storage/database.py
-│   └── research/
-│       ├── engine.py
-│       └── factors/momentum.py
-├── notebooks/
-│   ├── 01_data_exploration/
-│   │   └── 01_research_session_01.ipynb
-│   ├── 02_efficiency_research/
-│   ├── 03_factor_research/
-│   ├── 04_strategy_development/
-│   └── 05_risk_research/
-├── research/
-│   └── papers/
-│       ├── RN001_mean_reversion_nse_2007.md
-│       └── RN002_mean_reversion_nse_2007_2025.md
-├── sql/init/001_schema.sql
-├── docker-compose.yml
-├── requirements.txt
-└── setup_and_run.py
 
 ---
 
