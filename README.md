@@ -58,7 +58,7 @@ Database (PostgreSQL):
 - [x] Size factor — small cap premium
 - [x] Liquidity factor — illiquidity premium
 - [x] Factor independence — N/A (only one factor survived)
-- [ ] Risk model — covariance structure
+- [x] Risk model — covariance structure
 - [ ] Backtester — realistic simulation with NSE costs
 - [ ] Position sizing — Kelly criterion
 - [ ] Paper trading — 3 month live validation
