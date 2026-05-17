@@ -54,10 +54,10 @@ Database (PostgreSQL):
 - [x] Market efficiency tests — autocorrelation, Ljung-Box
 - [x] Mean reversion factor — confirmed, regime-tested, sector-tested
 - [x] Efficiency evolution — stable, p=0.76, edge is durable
-- [ ] Value factors — price-to-book, dividend yield
-- [ ] Size factor — small cap premium
-- [ ] Liquidity factor — illiquidity premium
-- [ ] Factor independence — correlation between factors
+- [x] Value factors — price-to-book, dividend yield
+- [x] Size factor — small cap premium
+- [x] Liquidity factor — illiquidity premium
+- [x] Factor independence — N/A (only one factor survived)
 - [ ] Risk model — covariance structure
 - [ ] Backtester — realistic simulation with NSE costs
 - [ ] Position sizing — Kelly criterion
