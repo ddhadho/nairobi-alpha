@@ -30,7 +30,7 @@ NSE stocks are weakly correlated compared to developed markets
 (US average: 0.3-0.5). Significant diversification opportunity exists.
 
 Notable: MSC (Mumias Sugar) shows spuriously high correlations
-due to near-zero variance in a suspended/distressed stock.
+due to near-zero variance in a suspended/distressed stock. 
 Exclude from strategy universe.
 
 ---
